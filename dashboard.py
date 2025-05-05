@@ -1,43 +1,30 @@
-import streamlit as st
-import sqlite3
 import pandas as pd
-import plotly.express as px
+import streamlit as st
+import os
 
-# Connect to SQLite
-conn = sqlite3.connect('feedback.db', check_same_thread=False)
-df = pd.read_sql_query('SELECT * FROM feedback', conn)
+feedback_file = 'feedback.csv'
 
-st.title("📊 Student Sentiment Dashboard")
+st.title("📊 Student Feedback Dashboard")
 
-if df.empty:
-    st.warning("No feedback submitted yet.")
+if os.path.exists(feedback_file):
+    df = pd.read_csv(feedback_file)
+
+    if df.empty:
+        st.warning("No feedback data available yet.")
+    else:
+        st.subheader("Feedback Data")
+        st.dataframe(df)
+
+        st.subheader("Department-wise Analysis")
+        st.bar_chart(df['department'].value_counts())
+
+        st.subheader("Sentiment Analysis")
+        st.bar_chart(df['sentiment'].value_counts())
+
+        st.subheader("Emotion Analysis")
+        st.bar_chart(df['emotion'].value_counts())
+
+        st.subheader("Recent Feedback")
+        st.write(df.tail(10))
 else:
-    st.subheader("Overall Sentiment Counts (VADER)")
-    vader_counts = df['sentiment_vader'].value_counts()
-    st.bar_chart(vader_counts)
-
-    st.subheader("Department-wise Sentiment (VADER)")
-    dept_summary = df.groupby('department')['sentiment_vader'].value_counts().unstack().fillna(0)
-    st.write(dept_summary)
-
-    # Pie chart per department
-    for dept in df['department'].unique():
-        dept_df = df[df['department'] == dept]
-        fig = px.pie(dept_df, names='sentiment_vader', title=f'{dept} Sentiment Breakdown')
-        st.plotly_chart(fig)
-
-    # Automated alerts
-    negative_counts = df[df['sentiment_vader'] == 'Negative'].groupby('department').size()
-    for dept, count in negative_counts.items():
-        if count > 5:
-            st.error(f"🚨 High negative feedback in {dept}: {count} reports")
-        else:
-            st.success(f"{dept} is doing fine: {count} negative reports")
-
-    # Recommendations
-    st.subheader("Recommendations")
-    for dept, count in negative_counts.items():
-        if count > 5:
-            st.info(f"🔧 {dept}: Organize a feedback session or address concerns.")
-        else:
-            st.success(f"🎉 {dept}: Keep up the good work!")
+    st.warning("No feedback data file found. Please collect feedback first.")
