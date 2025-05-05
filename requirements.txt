@@ -1,0 +1,8 @@
+pandas
+streamlit
+vaderSentiment
+transformers
+torch
+plotly
+altair
+yagmail
