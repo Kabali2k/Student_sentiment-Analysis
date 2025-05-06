@@ -55,68 +55,70 @@ def analyze_feedback(feedback_text):
         sentiment = 'Negative'
     return sentiment, dominant_emotion
 
-# Main app function
+def feedback_form():
+    st.title("Student Feedback Form")
+    with st.form(key='feedback_form'):
+        name = st.text_input("Student Name")
+        department = st.text_input("Department")
+        feedback = st.text_area("Feedback")
+        submit = st.form_submit_button("Submit Feedback")
+
+    if submit:
+        if not name or not department or not feedback:
+            st.error("Please fill all fields.")
+        else:
+            try:
+                sentiment, dominant_emotion = analyze_feedback(feedback)
+                insert_feedback(name, department, feedback, sentiment, dominant_emotion)
+                st.success(f"Feedback submitted! Sentiment: {sentiment}, Emotion: {dominant_emotion}")
+            except Exception as e:
+                st.error(f"Error analyzing feedback: {e}")
+
+def dashboard():
+    st.title("Feedback Dashboard")
+    df = get_feedback()
+    if df.empty:
+        st.info("No feedback submitted yet.")
+    else:
+        st.subheader("All Feedback")
+        st.dataframe(df[['name', 'department', 'feedback', 'sentiment', 'dominant_emotion']])
+
+        st.subheader("Sentiment Distribution")
+        sentiment_counts = df['sentiment'].value_counts()
+        fig1, ax1 = plt.subplots()
+        sentiment_counts.plot(kind='bar', ax=ax1)
+        ax1.set_xlabel("Sentiment")
+        ax1.set_ylabel("Count")
+        st.pyplot(fig1)
+
+        st.subheader("Emotion Distribution")
+        emotion_counts = df['dominant_emotion'].value_counts()
+        fig2, ax2 = plt.subplots()
+        emotion_counts.plot(kind='bar', ax=ax2, color='orange')
+        ax2.set_xlabel("Emotion")
+        ax2.set_ylabel("Count")
+        st.pyplot(fig2)
+
 def main():
     st.set_page_config(page_title="Feedback Sentiment & Emotion Analysis App")
     init_db()
 
-    # Simple login
     st.sidebar.title("Login")
     user_role = st.sidebar.selectbox("Select Role", ["Student", "Admin"])
+
     if user_role == "Admin":
         admin_password = st.sidebar.text_input("Admin Password", type="password")
         if admin_password != "admin123":
-            st.sidebar.error("Invalid admin password")
+            st.warning("Enter the correct admin password to continue.")
             st.stop()
-        menu = ["Feedback Form", "Dashboard"]
+        menu = st.sidebar.selectbox("Menu", ["Feedback Form", "Dashboard"])
     else:
-        menu = ["Feedback Form"]
+        menu = "Feedback Form"
 
-    choice = st.sidebar.selectbox("Menu", menu)
-
-    if choice == "Feedback Form":
-        st.title("Student Feedback Form")
-        with st.form(key='feedback_form'):
-            name = st.text_input("Student Name")
-            department = st.text_input("Department")
-            feedback = st.text_area("Feedback")
-            submit = st.form_submit_button("Submit Feedback")
-
-        if submit:
-            if not name or not department or not feedback:
-                st.error("Please fill all fields.")
-            else:
-                try:
-                    sentiment, dominant_emotion = analyze_feedback(feedback)
-                    insert_feedback(name, department, feedback, sentiment, dominant_emotion)
-                    st.success(f"Feedback submitted! Sentiment: {sentiment}, Emotion: {dominant_emotion}")
-                except Exception as e:
-                    st.error(f"Error analyzing feedback: {e}")
-
-    elif choice == "Dashboard" and user_role == "Admin":
-        st.title("Feedback Dashboard")
-        df = get_feedback()
-        if df.empty:
-            st.info("No feedback submitted yet.")
-        else:
-            st.subheader("All Feedback")
-            st.dataframe(df[['name', 'department', 'feedback', 'sentiment', 'dominant_emotion']])
-
-            st.subheader("Sentiment Distribution")
-            sentiment_counts = df['sentiment'].value_counts()
-            fig1, ax1 = plt.subplots()
-            sentiment_counts.plot(kind='bar', ax=ax1)
-            ax1.set_xlabel("Sentiment")
-            ax1.set_ylabel("Count")
-            st.pyplot(fig1)
-
-            st.subheader("Emotion Distribution")
-            emotion_counts = df['dominant_emotion'].value_counts()
-            fig2, ax2 = plt.subplots()
-            emotion_counts.plot(kind='bar', ax=ax2, color='orange')
-            ax2.set_xlabel("Emotion")
-            ax2.set_ylabel("Count")
-            st.pyplot(fig2)
+    if menu == "Feedback Form":
+        feedback_form()
+    elif menu == "Dashboard" and user_role == "Admin":
+        dashboard()
 
 if __name__ == '__main__':
     main()
