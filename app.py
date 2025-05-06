@@ -3,6 +3,10 @@ import sqlite3
 import pandas as pd
 import text2emotion as te
 import matplotlib.pyplot as plt
+import nltk
+
+# Download 'punkt' if not already available
+nltk.download('punkt')
 
 # Initialize DB
 def init_db():
@@ -21,7 +25,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Insert feedback
+# Insert feedback into DB
 def insert_feedback(name, department, feedback, sentiment, dominant_emotion):
     conn = sqlite3.connect('feedback.db')
     c = conn.cursor()
@@ -39,7 +43,7 @@ def get_feedback():
     conn.close()
     return df
 
-# Analyze feedback
+# Analyze feedback text
 def analyze_feedback(feedback_text):
     emotions = te.get_emotion(feedback_text)
     if not emotions:
@@ -51,7 +55,7 @@ def analyze_feedback(feedback_text):
         sentiment = 'Negative'
     return sentiment, dominant_emotion
 
-# Main app
+# Main app function
 def main():
     st.set_page_config(page_title="Feedback Sentiment & Emotion Analysis App")
     init_db()
