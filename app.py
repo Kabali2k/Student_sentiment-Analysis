@@ -108,7 +108,7 @@ def main():
 
     if user_role == "Admin":
         admin_password = st.sidebar.text_input("Admin Password", type="password")
-        if admin_password != "admin123":
+        if admin_password != "EWSBM":
             st.warning("Enter the correct admin password to continue.")
             st.stop()
         menu = st.sidebar.selectbox("Menu", ["Feedback Form", "Dashboard"])
