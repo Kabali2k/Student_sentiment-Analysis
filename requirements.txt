@@ -1,0 +1,7 @@
+streamlit
+pandas
+text2emotion
+nltk
+transformers
+emoji==1.6.3
+altair
