@@ -1,5 +1,5 @@
 streamlit
 transformers
-torch  # or tensorflow
 text2emotion
 pandas
+emoji==1.6.3
